@@ -1,5 +1,6 @@
 package com.todo.gui;
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -15,13 +16,12 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 
 import com.todo.dao.TodoAppDAO;
 
 public class TodoAppGUI extends JFrame {
-    private TodoAppDAO todoAppDAO;
+    private TodoAppDAO todoDAO;
     private JTable todoTable;
     private DefaultTableModel tableModel;
     private JTextField titleField;
@@ -34,31 +34,31 @@ public class TodoAppGUI extends JFrame {
     private JComboBox<String> filterComboBox;
 
     public TodoAppGUI() {
-        this.todoAppDAO = new TodoAppDAO();
-        initComponents();
+        this.todoDAO = new TodoAppDAO();
+        initializeComponents();
         setupLayout();
     }
-
-    private void initComponents() {
+    private void initializeComponents() {
         setTitle("Todo Application");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(800, 600);
         setLocationRelativeTo(null);
-
-        // Table model
-        String[] columnNames = {"ID", "Title", "Description", "Completed", "Created At", "Updated At"};
-        tableModel = new DefaultTableModel(columnNames, 0) {
+        String[] columnName = {"ID", "Title", "Description", "Completed"," Created At","Updated At"};
+        tableModel = new DefaultTableModel(columnName, 0){
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // Make table non-editable
+                return false; // Make all cells non-editable
             }
         };
-
-        // JTable
         todoTable = new JTable(tableModel);
         todoTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-        // Input fields
+        todoTable.getSelectionModel().addListSelectionListener(
+            (e) -> {
+                if (!e.getValueIsAdjusting()){
+                    //loadselectedtodo
+                }
+            }
+        );
         titleField = new JTextField(20);
         descriptionArea = new JTextArea(3, 20);
         descriptionArea.setLineWrap(true);
@@ -66,65 +66,90 @@ public class TodoAppGUI extends JFrame {
 
         completedCheckBox = new JCheckBox("Completed");
 
-        // Buttons
-        addButton = new JButton("Add");
-        updateButton = new JButton("Update Todo");
-        deleteButton = new JButton("Delete Todo");
-        refreshButton = new JButton("Refresh Todo");
-
-        // Filter dropdown
+        addButton = new JButton("Add todo");
+        updateButton = new JButton("Update todo");
+        deleteButton = new JButton("Delete todo");
+        refreshButton = new JButton("Refresh todo");
         String[] filterOptions = {"All", "Completed", "Pending"};
         filterComboBox = new JComboBox<>(filterOptions);
-        filterComboBox.addActionListener(e -> {
-            // filterTodos();
+        filterComboBox.addActionListener((e) -> {
+            //filtertodos();
         });
     }
-
-    private void setupLayout() {
+    private void setupLayout(){
         setLayout(new BorderLayout());
 
-        // ===== Input Panel =====
-        JPanel inputPanel = new JPanel(new GridBagLayout());
+        JPanel inputJPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
-
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.anchor = GridBagConstraints.WEST;
-        inputPanel.add(new JLabel("Title"), gbc);
 
+        inputJPanel.add(new JLabel("Title: "), gbc);
         gbc.gridx = 1;
-        inputPanel.add(titleField, gbc);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        inputJPanel.add(titleField, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 1;
-        inputPanel.add(new JLabel("Description"), gbc);
-
+        inputJPanel.add(new JLabel("Description"),gbc);
         gbc.gridx = 1;
-        inputPanel.add(new JScrollPane(descriptionArea), gbc);
-
+        inputJPanel.add(new JScrollPane(descriptionArea),gbc);
+        
         gbc.gridx = 1;
         gbc.gridy = 2;
-        inputPanel.add(completedCheckBox, gbc);
+        inputJPanel.add(completedCheckBox,gbc);
+        
+        JPanel ButtoPanel = new JPanel(new FlowLayout());
+        ButtoPanel.add(addButton);
+        ButtoPanel.add(updateButton);   
+        ButtoPanel.add(deleteButton);
+        ButtoPanel.add(refreshButton);
+        
+        add(inputJPanel,BorderLayout.NORTH);
 
-        // ===== Button Panel =====
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.add(addButton);
-        buttonPanel.add(updateButton);
-        buttonPanel.add(deleteButton);
-        buttonPanel.add(refreshButton);
-        buttonPanel.add(filterComboBox);
+        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        filterComboBox.add(new JLabel("Filter:"));
+        filterPanel.add(filterComboBox);
 
-        // ===== Add to frame =====
-        add(new JScrollPane(todoTable), BorderLayout.CENTER);
-        add(inputPanel, BorderLayout.NORTH);
-        add(buttonPanel, BorderLayout.SOUTH);
+        JPanel northPanel = new JPanel(new BorderLayout());
+        northPanel.add(inputJPanel,BorderLayout.CENTER);
+        northPanel.add(ButtoPanel,BorderLayout.SOUTH);
+        northPanel.add(filterPanel,BorderLayout.NORTH);
+
+        add(northPanel,BorderLayout.NORTH);
+        add(new JScrollPane(todoTable),BorderLayout.CENTER);
+
+        JPanel statusPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        statusPanel.add(new JLabel("seletct the todo to update or delete:"));
+        add(statusPanel,BorderLayout.SOUTH);
     }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            TodoAppGUI gui = new TodoAppGUI();
-            gui.setVisible(true);
+    private void setupEventListers(){
+        addButton.addActionListener((e) -> {addTodo();});
+        updateButton.addActionListener((e) -> {
+            updateTodo();
         });
+        deleteButton.addActionListener((e) -> {
+            deleteTodo();
+        });
+        refreshButton.addActionListener((e) -> {
+            refreshTodo();
+        });
+    }
+    private void addTodo(){ 
+
+    }
+    private void updateTodo(){ 
+
+    }
+    private void deleteTodo(){ 
+
+    }
+    private void refreshTodo(){ 
+
+    }
+    private void loadTodo(){
+        
     }
 }
